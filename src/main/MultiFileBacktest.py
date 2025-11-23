@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
+import time
 from multiprocessing import Pool, cpu_count
 from src.helper.BacktestHelper import BacktestHelper
 
@@ -27,6 +28,8 @@ def process_file(file_path):
 
 
 def main():
+    start_time = time.perf_counter()
+
     # All CSV files
     files = [
         os.path.join(FOLDER_PATH, f)
@@ -56,9 +59,19 @@ def main():
         for filename in good_files:
             f.write(filename + "\n")
 
+    end_time = time.perf_counter()
+    elapsed_time = end_time - start_time
+
     print("\n=== DONE ===")
     print(f"Files with Sharpe >= {SHARPE_THRESHOLD}: {len(good_files)}")
     print(f"Saved to: {OUT_FILE}\n")
+
+    if elapsed_time > 60:
+        mins = int(elapsed_time // 60)
+        secs = int(elapsed_time % 60)
+        print(f"Total Execution Time: {mins}m {secs}s")
+    else:
+        print(f"Total Execution Time: {elapsed_time:.2f} seconds")
 
 
 if __name__ == "__main__":
