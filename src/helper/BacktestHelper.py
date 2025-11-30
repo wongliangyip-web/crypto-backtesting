@@ -5,9 +5,10 @@ import seaborn as sns
 import plotly.express as px
 
 class BacktestHelper:
-    def __init__(self, rawDf, backtestType):
+    def __init__(self, rawDf, backtestType, annualizationFactor=365):
         self.rawDf = rawDf
         self.backtestType = backtestType
+        self.annualizationFactor = annualizationFactor
         self.df = self.rawDf.copy()
 
         df = self.rawDf.copy()
@@ -63,14 +64,14 @@ class BacktestHelper:
             sharpe = np.nan
             preciseSharpe = np.nan
         else:
-            annual_return = round(valid_pnl.mean() * 365, 3)
-            sharpe = round(valid_pnl.mean() / valid_pnl.std() * np.sqrt(365), 3)
+            annual_return = round(valid_pnl.mean() * self.annualizationFactor, 3)
+            sharpe = round(valid_pnl.mean() / valid_pnl.std() * np.sqrt(self.annualizationFactor), 3)
             mdd = df['dd'].max()
             calmar = round(annual_return / mdd, 3) if mdd != 0 else np.nan
 
             averageReturn = valid_pnl.mean()
             sd = valid_pnl.std()
-            preciseSharpe = round(averageReturn / sd * np.sqrt(365), 3)
+            preciseSharpe = round(averageReturn / sd * np.sqrt(self.annualizationFactor), 3)
 
             print(df)
             print(window, threshold, num_trades, 'annual_return', annual_return,
@@ -113,14 +114,14 @@ class BacktestHelper:
             sharpe = np.nan
             preciseSharpe = np.nan
         else:
-            annual_return = round(valid_pnl.mean() * 365, 3)
-            sharpe = round(valid_pnl.mean() / valid_pnl.std() * np.sqrt(365), 3)
+            annual_return = round(valid_pnl.mean() * self.annualizationFactor, 3)
+            sharpe = round(valid_pnl.mean() / valid_pnl.std() * np.sqrt(self.annualizationFactor), 3)
             mdd = df['dd'].max()
             calmar = round(annual_return / mdd, 3) if mdd != 0 else np.nan
 
             averageReturn = valid_pnl.mean()
             sd = valid_pnl.std()
-            preciseSharpe = round(averageReturn / sd * np.sqrt(365), 3)
+            preciseSharpe = round(averageReturn / sd * np.sqrt(self.annualizationFactor), 3)
 
             print(df)
             print(window, threshold, num_trades, 'annual_return', annual_return,
@@ -159,14 +160,14 @@ class BacktestHelper:
             sharpe = np.nan
             preciseSharpe = np.nan
         else:
-            annual_return = round(valid_pnl.mean() * 365, 3)
-            sharpe = round(valid_pnl.mean() / valid_pnl.std() * np.sqrt(365), 3)
+            annual_return = round(valid_pnl.mean() * self.annualizationFactor, 3)
+            sharpe = round(valid_pnl.mean() / valid_pnl.std() * np.sqrt(self.annualizationFactor), 3)
             mdd = df['dd'].max()
             calmar = round(annual_return / mdd, 3) if mdd != 0 else np.nan
 
             averageReturn = valid_pnl.mean()
             sd = valid_pnl.std()
-            preciseSharpe = round(averageReturn / sd * np.sqrt(365), 3)
+            preciseSharpe = round(averageReturn / sd * np.sqrt(self.annualizationFactor), 3)
 
             print(df)
             print(upperThreshold, lowerThreshold, num_trades, 'annual_return', annual_return,

@@ -8,11 +8,17 @@ from src.helper.BacktestHelper import BacktestHelper
 # ---------------------------------------------
 # CONFIG
 # ---------------------------------------------
-FOLDER_PATH = r"C:\Users\User\Desktop\backtesting\interval_1h-20250830T115325Z-1\interval_24h\train data"
+# Determine paths relative to this script
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# src/main -> src -> crypto (root)
+project_root = os.path.abspath(os.path.join(current_dir, '..', '..'))
+
+FOLDER_PATH = os.path.join(project_root, 'src', 'testdata', 'interval_1h', 'train data')
 WINDOW_LIST = np.round(np.arange(10, 100, 5), 1)
 THRESHOLD_LIST = np.round(np.arange(0, 2, 0.25), 2)
+ANNUALIZATION_FACTOR = 365 * 24 # 1h data
 SHARPE_THRESHOLD = 1.5
-OUT_FILE = r"C:\Users\User\Desktop\backtesting\interval_1h-20250830T115325Z-1\interval_24h\best_sharpe.txt"
+OUT_FILE = os.path.join(project_root, 'src', 'testdata', 'interval_1h', 'best_sharpe.txt')
 # ---------------------------------------------
 
 
@@ -20,7 +26,7 @@ def process_file(file_path):
     """Run backtest for 1 file."""
     try:
         df = pd.read_csv(file_path)
-        helper = BacktestHelper(df, 'zScore')
+        helper = BacktestHelper(df, 'zScore', ANNUALIZATION_FACTOR)
         best_sharpe = helper.findBestSharpe(WINDOW_LIST, THRESHOLD_LIST, 0)
         return os.path.basename(file_path), best_sharpe
     except Exception as e:
