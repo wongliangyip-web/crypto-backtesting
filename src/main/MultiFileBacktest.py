@@ -5,20 +5,14 @@ import time
 from multiprocessing import Pool, cpu_count
 from src.helper.BacktestHelper import BacktestHelper
 
-# ---------------------------------------------
-# CONFIG
-# ---------------------------------------------
-# Determine paths relative to this script
-current_dir = os.path.dirname(os.path.abspath(__file__))
-# src/main -> src -> crypto (root)
-project_root = os.path.abspath(os.path.join(current_dir, '..', '..'))
 
-FOLDER_PATH = os.path.join(project_root, 'src', 'testdata', 'interval_1h', 'train data')
+FOLDER_PATH = r"C:\Users\User\Desktop\backtesting\interval_1h-20250830T115325Z-1\interval_1h\train data"
 WINDOW_LIST = np.round(np.arange(10, 100, 5), 1)
 THRESHOLD_LIST = np.round(np.arange(0, 2, 0.25), 2)
 ANNUALIZATION_FACTOR = 365 * 24 # 1h data
 SHARPE_THRESHOLD = 1.5
-OUT_FILE = os.path.join(project_root, 'src', 'testdata', 'interval_1h', 'best_sharpe.txt')
+CALMAR_THRESHOLD = 2.0
+OUT_FILE = r"C:\Users\User\Desktop\backtesting\interval_1h-20250830T115325Z-1\interval_1h\best_sharpe_file.txt"
 # ---------------------------------------------
 
 
@@ -27,10 +21,10 @@ def process_file(file_path):
     try:
         df = pd.read_csv(file_path)
         helper = BacktestHelper(df, 'zScore', ANNUALIZATION_FACTOR)
-        best_sharpe = helper.findBestSharpe(WINDOW_LIST, THRESHOLD_LIST, 0)
-        return os.path.basename(file_path), best_sharpe
+        best_sharpe, best_calmar = helper.findBestSharpe(WINDOW_LIST, THRESHOLD_LIST, 0)
+        return os.path.basename(file_path), best_sharpe, best_calmar
     except Exception as e:
-        return os.path.basename(file_path), f"ERROR: {e}"
+        return os.path.basename(file_path), f"ERROR: {e}", 0
 
 
 def main():
@@ -54,10 +48,10 @@ def main():
     pool.close()
     pool.join()
 
-    # Filter only Sharpe >= threshold
+    # Filter only Sharpe >= threshold AND Calmar >= threshold
     good_files = [
-        filename for filename, sharpe in results
-        if isinstance(sharpe, (int, float)) and sharpe >= SHARPE_THRESHOLD
+        filename for filename, sharpe, calmar in results
+        if isinstance(sharpe, (int, float)) and sharpe >= SHARPE_THRESHOLD and calmar >= CALMAR_THRESHOLD
     ]
 
     # Save to text file
@@ -69,7 +63,7 @@ def main():
     elapsed_time = end_time - start_time
 
     print("\n=== DONE ===")
-    print(f"Files with Sharpe >= {SHARPE_THRESHOLD}: {len(good_files)}")
+    print(f"Files with Sharpe >= {SHARPE_THRESHOLD} and Calmar >= {CALMAR_THRESHOLD}: {len(good_files)}")
     print(f"Saved to: {OUT_FILE}\n")
 
     if elapsed_time > 60:

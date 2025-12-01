@@ -282,4 +282,5 @@ class BacktestHelper:
                 result_list.append(result)
 
         result_df = pd.DataFrame(result_list)
-        return result_df['sharpe'].max()
+        best_row = result_df.loc[result_df['sharpe'].idxmax()]
+        return best_row['sharpe'], best_row['calmar']
