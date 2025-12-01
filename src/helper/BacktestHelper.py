@@ -63,6 +63,9 @@ class BacktestHelper:
         if valid_pnl.std() == 0 or len(valid_pnl) < 2:
             sharpe = np.nan
             preciseSharpe = np.nan
+            annual_return = np.nan
+            mdd = np.nan
+            calmar = np.nan
         else:
             annual_return = round(valid_pnl.mean() * self.annualizationFactor, 3)
             sharpe = round(valid_pnl.mean() / valid_pnl.std() * np.sqrt(self.annualizationFactor), 3)
@@ -77,7 +80,8 @@ class BacktestHelper:
             print(window, threshold, num_trades, 'annual_return', annual_return,
                   'sharpe', sharpe, 'calmar', calmar, 'preciseSharpe', preciseSharpe)
 
-        return pd.Series([window, threshold, sharpe, num_trades], index=['window', 'threshold', 'sharpe', 'trades'])
+        return pd.Series([window, threshold, sharpe, num_trades, annual_return, mdd, calmar], 
+                         index=['window', 'threshold', 'sharpe', 'trades', 'annual_return', 'mdd', 'calmar'])
 
     def __maDiffBacktest(self, window, threshold, isReversePos=False):
         df = self.df
@@ -113,6 +117,9 @@ class BacktestHelper:
         if valid_pnl.std() == 0 or len(valid_pnl) < 2:
             sharpe = np.nan
             preciseSharpe = np.nan
+            annual_return = np.nan
+            mdd = np.nan
+            calmar = np.nan
         else:
             annual_return = round(valid_pnl.mean() * self.annualizationFactor, 3)
             sharpe = round(valid_pnl.mean() / valid_pnl.std() * np.sqrt(self.annualizationFactor), 3)
@@ -127,7 +134,8 @@ class BacktestHelper:
             print(window, threshold, num_trades, 'annual_return', annual_return,
                   'sharpe', sharpe, 'calmar', calmar, 'preciseSharpe', preciseSharpe)
 
-        return pd.Series([window, threshold, sharpe, num_trades], index=['window', 'threshold', 'sharpe', 'trades'])
+        return pd.Series([window, threshold, sharpe, num_trades, annual_return, mdd, calmar], 
+                         index=['window', 'threshold', 'sharpe', 'trades', 'annual_return', 'mdd', 'calmar'])
 
     def __simpleThresholdBacktest(self, upperThreshold, lowerThreshold, isReversePos=False):
         df = self.df
@@ -159,6 +167,9 @@ class BacktestHelper:
         if valid_pnl.std() == 0 or len(valid_pnl) < 2:
             sharpe = np.nan
             preciseSharpe = np.nan
+            annual_return = np.nan
+            mdd = np.nan
+            calmar = np.nan
         else:
             annual_return = round(valid_pnl.mean() * self.annualizationFactor, 3)
             sharpe = round(valid_pnl.mean() / valid_pnl.std() * np.sqrt(self.annualizationFactor), 3)
@@ -173,7 +184,8 @@ class BacktestHelper:
             print(upperThreshold, lowerThreshold, num_trades, 'annual_return', annual_return,
                   'sharpe', sharpe, 'calmar', calmar, 'preciseSharpe', preciseSharpe)
 
-        return pd.Series([upperThreshold, lowerThreshold, sharpe, num_trades], index=['window', 'threshold', 'sharpe', 'trades'])
+        return pd.Series([upperThreshold, lowerThreshold, sharpe, num_trades, annual_return, mdd, calmar], 
+                         index=['window', 'threshold', 'sharpe', 'trades', 'annual_return', 'mdd', 'calmar'])
 
     def generateHeatMap(self, window_list, threshold_list, isReversePos=False):
         ## optimisation
@@ -195,13 +207,35 @@ class BacktestHelper:
         result_df = result_df.sort_values(by='sharpe', ascending=False)
         print(result_df)
 
-        data_table = result_df.pivot(index='window', columns='threshold', values='sharpe')
-        sns.heatmap(data_table, annot=True, cmap='Greens')
-        plt.show()
+        # List of metrics to plot
+        metrics = ['sharpe', 'trades', 'annual_return', 'mdd', 'calmar']
+        titles = ['Sharpe Ratio', 'Number of Trades', 'Annual Return', 'Max Drawdown', 'Calmar Ratio']
+        cmaps = ['Greens', 'Blues', 'Oranges', 'Reds', 'Purples']
 
-        trades_table = result_df.pivot(index='window', columns='threshold', values='trades')
-        sns.heatmap(trades_table, annot=True, fmt=",", cmap="Blues")
-        plt.title("Number of Trades Heatmap")
+        # Create subplots
+        fig, axes = plt.subplots(3, 2, figsize=(22, 20))
+        axes = axes.flatten()
+
+        for i, metric in enumerate(metrics):
+            if metric in result_df.columns:
+                data_table = result_df.pivot(index='window', columns='threshold', values=metric)
+                sns.heatmap(data_table, annot=True, annot_kws={'size': 8}, fmt=".2f" if metric != 'trades' else ".0f", cmap=cmaps[i], ax=axes[i], cbar=True)
+                axes[i].set_title(titles[i])
+                
+                axes[i].set_yticklabels(data_table.index.astype(int), rotation=0)
+        
+        # Hide the last empty subplot if odd number of metrics
+        if len(metrics) < len(axes):
+            axes[-1].axis('off')
+
+        plt.subplots_adjust(
+            left=0.032,
+            bottom=0.042,
+            right=1,
+            top=0.956,
+            wspace=0.055,
+            hspace=0.26
+        )
         plt.show()
 
     def showSecondaryAxis(self):
